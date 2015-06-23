@@ -79,6 +79,26 @@ describe 'AdRequest', ->
       expect(displayArea[0].supported_media).to.exist
       expect(displayArea[0].supported_media).to.include 'text/x-injected-test-value'
 
+    it 'should add min_duration to display areas if set', ->
+      displayArea = @request.body().display_area
+      expect(displayArea[0].min_duration).to.exist
+      expect(displayArea[0].min_duration).to.equal 5
+
+    it 'should add max_duration to display areas if set', ->
+      displayArea = @request.body().display_area
+      expect(displayArea[0].max_duration).to.exist
+      expect(displayArea[0].max_duration).to.equal 6
+
+    it 'should add cpm_floor_cents to display areas if set', ->
+      displayArea = @request.body().display_area
+      expect(displayArea[0].cpm_floor_cents).to.exist
+      expect(displayArea[0].cpm_floor_cents).to.equal 600
+
+    it 'should add allow_audio to display areas if set', ->
+      displayArea = @request.body().display_area
+      expect(displayArea[0].allow_audio).to.exist
+      expect(displayArea[0].allow_audio).to.be.true
+
     it 'should have the device_attribute array', ->
       body = @request.body()
       expect(body.device_attribute).to.be.an.instanceOf Array

@@ -33,15 +33,16 @@ beforeEach ->
         latitude:          39.9859241
         longitude:         -75.1299363
         queueSize:         32
+        minDuration:       5
+        maxDuration:       6
+        cpmFloorCents:     600
+        allowAudio:        true
         mimeTypes:         ['text/x-injected-test-value']
         displayArea: [
           {
             id:            'display-0'
             width:         1280
             height:        720
-            min_duration:  null
-            max_duration:  null
-            allow_audio:   true
           }
         ]
 

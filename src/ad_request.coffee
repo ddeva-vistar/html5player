@@ -49,6 +49,10 @@ class AdRequest
       throw new Error('must configure a displayArea list')
     for screen in @config.displayArea
       screen.supported_media = @supportedMedia()
+      screen.cpm_floor_cents = @config.cpmFloorCents
+      screen.max_duration    = @config.maxDuration
+      screen.min_duration    = @config.minDuration
+      screen.allow_audio     = @config.allowAudio
       screen
 
   _deviceAttribute: -> [
