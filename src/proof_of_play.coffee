@@ -1,7 +1,10 @@
 inject      = require 'honk-di'
-Logger      = require './logger'
 {Ajax}      = require 'ajax'
 {Transform} = require('stream')
+
+Logger             = require './logger'
+{requestErrorBody} = require './error'
+
 
 class ProofOfPlay extends Transform
   http:    inject Ajax
@@ -15,23 +18,78 @@ class ProofOfPlay extends Transform
     @lastSuccessfulRequestTime = new Date().getTime()
 
   expire: (ad) ->
-    @log.write name: 'ProofOfPlay', message: 'expiring', meta: ad
-    url = ad.expiration_url
-    @http.request
+    url       = ad.expiration_url
+    timestamp = @log.now()
+
+    req = @http.request
       type:             'GET'
       url:              url
       dataType:         'json'
       withCredentials:  false
+      timeout:          7500
+    req.then (response) =>
+      @log.write
+        name:     Logger.types.PROOF_OF_PLAY_EXPIRE
+        message:  Logger.types.SUCCESS
+        request:
+          advertisement:  ad
+          timestamp:      timestamp
+          url:            url
+        response:
+          body:       response
+          url:        url
+          timestamp:  @log.now()
+     req.catch (respOrEvent) =>
+        @log.write
+          name:     Logger.types.PROOF_OF_PLAY_EXPIRE
+          message:  Logger.types.FAILURE
+          request:
+            advertisement:  ad
+            timestamp:      timestamp
+            url:            url
+          response:
+            body:       requestErrorBody(respOrEvent)
+            url:        url
+            timestamp:  @log.now()
+    req
 
   confirm: (ad) ->
-    @log.write name: 'ProofOfPlay', message: 'confirming', meta: ad
-    url = ad.proof_of_play_url
-    @http.request
+    body      = JSON.stringify(display_time: ad.display_time)
+    timestamp = @log.now()
+    url       = ad.proof_of_play_url
+
+    req = @http.request
       type:             'POST'
       url:              url
       dataType:         'json'
       withCredentials:  false
-      data:             JSON.stringify(display_time:  ad.display_time)
+      data:             body
+      timeout:          7500
+    req.then (response) =>
+      @log.write
+        name:     Logger.types.PROOF_OF_PLAY_CONFIRM
+        message:  Logger.types.SUCCESS
+        request:
+          advertisement:  ad
+          body:           body
+          timestamp:      timestamp
+          url:            url
+        response:
+          body:  response
+          url:   url
+    req.catch (respOrEvent) =>
+      @log.write
+        name:     Logger.types.PROOF_OF_PLAY_CONFIRM
+        message:  Logger.types.FAILURE
+        request:
+          advertisement:  ad
+          body:           body
+          timestamp:      timestamp
+          url:            url
+        response:
+          body:  requestErrorBody(respOrEvent)
+          url:   url
+    req
 
   _transform: (ad, encoding, callback) ->
     @lastRequestTime = new Date().getTime()
@@ -47,10 +105,16 @@ class ProofOfPlay extends Transform
         # flag is set, status code will be 0. Otherwise, status will be set to
         # HTTP status code. We need to drop the PoP request on server errors.
         if e?.currentTarget?.status == 0
-          @log.write name: 'ProofOfPlay', message: 'confirm failed, adding back to the queue.', meta: ad
+          @log.write
+            name: Logger.types.PROOF_OF_PLAY_REQUEUE
+            message:  'confirm failed:  adding back to the queue.'
+            advertisement:  ad
           setTimeout(write, 5000)
         else
-          @log.write name: 'ProofOfPlay', message: 'confirm failed, dropping the request.', meta: ad
+          @log.write
+            name: Logger.types.PROOF_OF_PLAY_DROP
+            message: 'confirm failed: dropping the request.'
+            advertisement: ad
     else
       @expire(ad).then (response) =>
         @lastSuccessfulRequestTime = new Date().getTime()
@@ -58,10 +122,16 @@ class ProofOfPlay extends Transform
       .catch (e) =>
         callback()
         if e?.currentTarget?.status == 0
-          @log.write name: 'ProofOfPlay', message: 'expire failed, adding back to the queue.', meta: ad
+          @log.write
+            name: Logger.types.PROOF_OF_PLAY_REQUEUE
+            message: 'expire failed: adding back to the queue.'
+            advertisement: ad
           setTimeout(write, 5000)
         else
-          @log.write name: 'ProofOfPlay', message: 'expire failed, dropping the request.', meta: ad
+          @log.write
+            name: Logger.types.PROOF_OF_PLAY_DROP
+            message: 'expire failed: dropping the request.'
+            advertisement: ad
 
   _wasDisplayed: (ad) ->
     ad.html5player?.was_played
@@ -75,5 +145,6 @@ class ProofOfPlay extends Transform
       cb(null, response)
     else
       cb()
+
 
 module.exports = ProofOfPlay
