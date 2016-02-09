@@ -1,6 +1,8 @@
-inject = require 'honk-di'
-Logger = require './logger'
-{Ajax} = require 'ajax'
+inject             = require 'honk-di'
+{Ajax}             = require 'ajax'
+
+Logger             = require './logger'
+{requestErrorBody} = require './error'
 
 
 class AdRequest
@@ -11,14 +13,39 @@ class AdRequest
   navigator:  inject 'navigator'
 
   fetch: ->
-    body = JSON.stringify(@body())
-    @log.write name: 'AdRequest', message: "#{@config.url} POST #{body}"
-    @http.request
+    body      = @body()
+    timestamp = @log.now()
+
+    req = @http.request
       type:             'POST'
       url:              @config.url
       dataType:         'json'
-      data:             body
+      data:             JSON.stringify(body)
       withCredentials:  false
+      timeout:          7500
+    req.then (response) =>
+      @log.write
+        name:      Logger.types.AD_REQUEST
+        message:   Logger.types.SUCCESS
+        request:
+          url:        @config.url
+          body:       body
+          timestamp:  timestamp
+        response:
+          body:       response
+          timestamp:  @log.now()
+    req.catch (respOrEvent) =>
+      @log.write
+        name:      Logger.types.AD_REQUEST
+        message:   Logger.types.FAILURE
+        request:
+          url:        @config.url
+          body:       body
+          timestamp:  timestamp
+        response:
+          body:       requestErrorBody(respOrEvent)
+          timestamp:  @log.now()
+    req
 
   body: ->
     # number_of_screens is deprecated
