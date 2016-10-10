@@ -14,6 +14,7 @@ describe 'ProofOfPlay', ->
     @http = @injector.getInstance Ajax
 
   context 'update health check state', ->
+
     beforeEach ->
       @now = new Date().getTime()
       @clock = sinon.useFakeTimers(@now)
@@ -38,12 +39,12 @@ describe 'ProofOfPlay', ->
       ad =
         id: 'some-id'
         display_time: 1420824124
+        length_in_seconds: 15
         proof_of_play_url: 'http://pop.example.com/pop?v=1'
         html5player:
           was_played: true
 
       @http.match url: ad.proof_of_play_url, type: 'POST', (req, promise) =>
-        expect(JSON.parse(req.data).display_time).to.equal 1420824124
         promise.resolve @fixtures.popResponse
       expect(@pop.lastSuccessfulRequestTime).to.equal @now
       @clock.tick(500)
@@ -54,12 +55,12 @@ describe 'ProofOfPlay', ->
       ad =
         id: 'some-id'
         display_time: 1420824124
+        length_in_seconds: 15
         proof_of_play_url: 'http://pop.example.com/pop?v=1'
         html5player:
           was_played: true
 
       @http.match url: ad.proof_of_play_url, type: 'POST', (req, promise) =>
-        expect(JSON.parse(req.data).display_time).to.equal 1420824124
         promise.reject()
       expect(@pop.lastSuccessfulRequestTime).to.equal @now
       @clock.tick(500)
@@ -315,14 +316,23 @@ describe 'ProofOfPlay', ->
 
   describe '#confirm', ->
 
-    it 'should POST the `display_time`', (done) ->
+    beforeEach ->
+      @now = 1476127017 * 1000
+      @clock = sinon.useFakeTimers(@now)
+
+    afterEach ->
+      @clock.restore()
+
+    it 'should POST the `display_time` as (now - duration)', (done) ->
       ad =
         id: 'some-id'
-        display_time: 1420824124
+        display_time: 1477824124
+        length_in_seconds: 15
         proof_of_play_url: 'http://pop.example.com/pop?v=1'
+      expectedDisplayTime = (@now / 1000) - 15
 
       @http.match url: ad.proof_of_play_url, type: 'POST', (req, promise) =>
-        expect(JSON.parse(req.data).display_time).to.equal 1420824124
+        expect(JSON.parse(req.data).display_time).to.equal expectedDisplayTime
         promise.resolve @fixtures.popResponse
 
       @pop.confirm(ad).then (response) ->
@@ -334,6 +344,7 @@ describe 'ProofOfPlay', ->
         ad =
           id: 'some-id'
           display_time: 140432423
+          length_in_seconds: 15
           proof_of_play_url: 'http://pop.example.com/pop?v=1'
 
         @http.match url: ad.proof_of_play_url, type: 'POST', (req, promise) =>

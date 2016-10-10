@@ -2,6 +2,14 @@
 
 an html5 Vistar Media ad request library.
 
+### 1.6.1
+
+send more accurate `display_time` with proof of play
+
+* assume that `ProofOfPlay#write` is called right after the advertisement is
+  played.  set `display_time` on the proof of play request to current time -
+  advertisement duration
+
 ### 1.6.0
 
 Logging to give more detailed information.

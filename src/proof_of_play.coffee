@@ -6,6 +6,8 @@ Logger             = require './logger'
 {requestErrorBody} = require './error'
 
 
+nowInSeconds = -> Math.round(new Date().getTime() / 1000)
+
 class ProofOfPlay extends Transform
   http:    inject Ajax
   config:  inject 'config'
@@ -54,7 +56,8 @@ class ProofOfPlay extends Transform
     req
 
   confirm: (ad) ->
-    body      = JSON.stringify(display_time: ad.display_time)
+    displayTime = nowInSeconds() - ad.length_in_seconds
+    body      = JSON.stringify(display_time: displayTime)
     timestamp = @log.now()
     url       = ad.proof_of_play_url
 
