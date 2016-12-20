@@ -5,16 +5,26 @@ ProofOfPlay         = require './proof_of_play'
 VariedAdStream      = require './varied_ad_stream'
 {Ajax, XMLHttpAjax} = require 'ajax'
 
+broadsign = window.BroadSignObject
+
 defaultConfig = {}
 defaultConfig['vistar.api_key']    = '58b68728-11d4-41ed-964a-95dca7b59abd'
 defaultConfig['vistar.network_id'] = 'Ex-f6cCtRcydns8mcQqFWQ'
-defaultConfig['vistar.device_id']  = 'test-device-id'
+defaultConfig['vistar.device_id']  = broadsign?.player_id or ''
+defaultConfig['vistar.venue_id']  = broadsign?.player_id or ''
 defaultConfig['vistar.debug']      = false
 defaultConfig['vistar.url']        =
   'http://dev.api.vistarmedia.com/api/v1/get_ad/json'
 
 
 config = window.Cortex?.getConfig() or defaultConfig
+
+clientWidth = window.document.documentElement.clientWidth
+clientHeight = window.document.documentElement.clientHeight
+
+# broadsign width and height
+dimensions = broadsign?.frame_resolution or "#{clientWidth}x#{clientHeight}"
+[width, height] = (Number(p) for p in dimensions.split('x'))
 
 
 window?.Vistar = ->
@@ -31,21 +41,21 @@ window?.Vistar = ->
         networkId:         config['vistar.network_id']
         deviceId:          window.Cortex?.player?.id() or config['vistar.device_id']
         venueId:           config['vistar.venue_id']
-        width:             1280
-        height:            720
+        width:             width
+        height:            height
         cacheAssets:       true
         allowAudio:        true
         directConnection:  false
-        latitude:          39.9859241
-        longitude:         -75.1299363
-        queueSize:         10
+        #latitude:          39.9859241
+        #longitude:         -75.1299363
+        queueSize:         1
         debug:             !!defaultConfig['vistar.debug']
         mimeTypes:         ['image/gif', 'image/jpeg', 'image/png', 'video/webm']
         displayArea: [
           {
             id:               'display-0'
-            width:            1280
-            height:           720
+            width:            width
+            height:           height
             allow_audio:      false
             cpm_floor_cents:  Number(config['vistar.cpm_floor_cents'] or 0)
           }
