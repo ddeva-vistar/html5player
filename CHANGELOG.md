@@ -2,6 +2,10 @@
 
 an html5 Vistar Media ad request library.
 
+### 1.6.2
+
+Update link to new knowledge base article about the HTML5 Player
+
 ### 1.6.1
 
 send more accurate `display_time` with proof of play
