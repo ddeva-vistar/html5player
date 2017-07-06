@@ -12,12 +12,13 @@ dist: clean deps
 
 .PHONY: build
 build: deps
-	$(GULP) build
+	$(GULP) build --config=$(config)
 
 .PHONY: clean
 clean:
 	@find . -maxdepth 1 -iname '$(PROJECT_NAME)-*.zip' -print0 | xargs -0 rm -f
 	@rm -rf lib/*
+	@rm -rf ./build/*.json
 
 .PHONY: deps
 deps:

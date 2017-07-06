@@ -1,0 +1,38 @@
+{
+  "url" : "http://dev.api.vistarmedia.com/api/v1/get_ad/json",
+  "apiKey" : "DEFAULT_API_KEY",
+  "networkId" : "DEFAULT_NETWORK_ID",
+  "deviceId" : "VistarDisplay0",
+  "venueId" : "DEFAULT_VENUE_ID",
+  "width" : 1080,
+  "height" : 1920,
+  "cacheAssets" : true,
+  "allowAudio" : true,
+  "directConnection" : false,
+  "latitude" : 40.7831,
+  "longitude" : -73.9712,
+  "queueSize" : 10,
+  "debug" : false,
+  "mimeTypes" : ["application/x-shockwave-dynamic-flash",
+        "application/x-shockwave-flash",
+        "image/gif",
+        "image/jpeg",
+        "image/png",
+        "video/mp4",
+        "video/mpeg",
+        "video/mpg",
+        "video/quicktime",
+        "video/webm",
+        "video/x-flv",
+        "video/x-ms-wmv",
+        "video/x-msvideo"],
+  "displayArea": [
+    {
+      "id": "display-0",
+      "width": 1080,
+      "height": 1920,
+      "allow_audio": false,
+      "cpm_floor_cents": 0
+   }
+  ]
+}

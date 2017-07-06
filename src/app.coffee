@@ -4,18 +4,10 @@ Player              = require './player'
 ProofOfPlay         = require './proof_of_play'
 VariedAdStream      = require './varied_ad_stream'
 {Ajax, XMLHttpAjax} = require 'ajax'
-
-defaultConfig = {}
-defaultConfig['vistar.api_key']    = '58b68728-11d4-41ed-964a-95dca7b59abd'
-defaultConfig['vistar.network_id'] = 'Ex-f6cCtRcydns8mcQqFWQ'
-defaultConfig['vistar.device_id']  = 'test-device-id'
-defaultConfig['vistar.debug']      = false
-defaultConfig['vistar.url']        =
-  'http://dev.api.vistarmedia.com/api/v1/get_ad/json'
+http                = require 'http'
 
 
-config = window.Cortex?.getConfig() or defaultConfig
-
+config = ''
 
 window?.Vistar = ->
   # an example app
@@ -25,12 +17,18 @@ window?.Vistar = ->
       @bindConstant('navigator').to window.navigator
       @bindConstant('video').to document.querySelector('.player video')
       @bindConstant('image').to document.querySelector('.player img')
-      @bindConstant('config').to
-        url:               config['vistar.url']
-        apiKey:            config['vistar.api_key']
-        networkId:         config['vistar.network_id']
-        deviceId:          window.Cortex?.player?.id() or config['vistar.device_id']
-        venueId:           config['vistar.venue_id']
+      @bindConstant('config').to config
+
+    if !!CONFIG
+      # CONFIG is a global variable in config.js that is an optional json
+      config = CONFIG
+    else
+      config = {
+        url:               'http://dev.api.vistarmedia.com/api/v1/get_ad/json'
+        apiKey:            'DEFAULT_API_KEY'
+        networkId:         'DEFAULT_NETWORK_ID'
+        deviceId:          'DEFAULT_DEVICE_ID'
+        venueId:           'DEFAULT_VENUE_ID'
         width:             1280
         height:            720
         cacheAssets:       true
@@ -39,7 +37,7 @@ window?.Vistar = ->
         latitude:          39.9859241
         longitude:         -75.1299363
         queueSize:         10
-        debug:             !!defaultConfig['vistar.debug']
+        debug:             false
         mimeTypes:         ['image/gif', 'image/jpeg', 'image/png', 'video/webm']
         displayArea: [
           {
@@ -47,23 +45,23 @@ window?.Vistar = ->
             width:            1280
             height:           720
             allow_audio:      false
-            cpm_floor_cents:  Number(config['vistar.cpm_floor_cents'] or 0)
+            cpm_floor_cents:  Number(0)
           }
         ]
+      }
 
-  injector = new inject.Injector(new Binder)
+    injector = new inject.Injector(new Binder)
+    ads      = injector.getInstance VariedAdStream
+    player   = injector.getInstance Player
+    pop      = injector.getInstance ProofOfPlay
 
-  ads    = injector.getInstance VariedAdStream
-  player = injector.getInstance Player
-  pop    = injector.getInstance ProofOfPlay
+    # this exists only so one can inspect the different components while it's
+    # running
+    window.__vistarplayer =
+      ads:     ads
+      player:  player
+      pop:     pop
 
-  # this exists only so one can inspect the different components while it's
-  # running
-  window.__vistarplayer =
-    ads:     ads
-    player:  player
-    pop:     pop
-
-  ads
-    .pipe(player)
-    .pipe(pop)
+    ads
+      .pipe(player)
+      .pipe(pop)
