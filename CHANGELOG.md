@@ -2,6 +2,10 @@
 
 an html5 Vistar Media ad request library.
 
+### 1.6.4
+
+Issue when publishing to npm called for a version bump and redeploy
+
 ### 1.6.3
 
 Added JSON configuration support. Removed Cortex configuration.

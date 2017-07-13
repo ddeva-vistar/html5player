@@ -2,7 +2,7 @@
   "author":       "Vistar Media <engineering@vistarmedia.com>",
   "name":         "vistar-html5player",
   "description":  "An HTML 5 Player for Vistar Media assets.",
-  "version":      "1.6.3",
+  "version":      "1.6.4",
   "homepage":     "https://help.vistarmedia.com/hc/en-us/articles/224825127-HTML5-Player",
   "repository": {
     "type":  "git",
