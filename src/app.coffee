@@ -4,6 +4,7 @@ Player              = require './player'
 ProofOfPlay         = require './proof_of_play'
 VariedAdStream      = require './varied_ad_stream'
 {Ajax, XMLHttpAjax} = require 'ajax'
+http                = require 'http'
 
 broadsign = window.BroadSignObject
 
@@ -25,7 +26,6 @@ clientHeight = window.document.documentElement.clientHeight
 # broadsign width and height
 dimensions = broadsign?.frame_resolution or "#{clientWidth}x#{clientHeight}"
 [width, height] = (Number(p) for p in dimensions.split('x'))
-
 
 window?.Vistar = ->
   # an example app
@@ -50,30 +50,19 @@ window?.Vistar = ->
         #longitude:         -75.1299363
         queueSize:         1
         debug:             !!defaultConfig['vistar.debug']
-        mimeTypes:         ['image/gif', 'image/jpeg', 'image/png', 'video/webm']
-        displayArea: [
-          {
-            id:               'display-0'
-            width:            width
-            height:           height
-            allow_audio:      false
-            cpm_floor_cents:  Number(config['vistar.cpm_floor_cents'] or 0)
-          }
-        ]
 
-  injector = new inject.Injector(new Binder)
+    injector = new inject.Injector(new Binder)
+    ads      = injector.getInstance VariedAdStream
+    player   = injector.getInstance Player
+    pop      = injector.getInstance ProofOfPlay
 
-  ads    = injector.getInstance VariedAdStream
-  player = injector.getInstance Player
-  pop    = injector.getInstance ProofOfPlay
+    # this exists only so one can inspect the different components while it's
+    # running
+    window.__vistarplayer =
+      ads:     ads
+      player:  player
+      pop:     pop
 
-  # this exists only so one can inspect the different components while it's
-  # running
-  window.__vistarplayer =
-    ads:     ads
-    player:  player
-    pop:     pop
-
-  ads
-    .pipe(player)
-    .pipe(pop)
+    ads
+      .pipe(player)
+      .pipe(pop)
