@@ -30,5 +30,3 @@ To use a JSON configuration, pass in the config in the command line.
 
 The same argument can be used with other tasks. See an example config in
 [https://github.com/vistarmedia/html5player/blob/master/config.json](config.json)
-
-Note: when using gulp tasks, the parameter is --config.

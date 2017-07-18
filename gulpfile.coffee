@@ -51,7 +51,7 @@ gulp.task 'config', ->
       config = JSON.parse configFile
     catch err
       gutil.log "Error parsing config file: " + err
-      process.exit(-1)
+      process.exit(1)
   gulp.src('./src/config.js')
     .pipe(template({configJSON: JSON.stringify(config)}))
     .pipe(gulp.dest(project.dest))
