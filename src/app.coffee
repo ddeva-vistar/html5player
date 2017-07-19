@@ -4,20 +4,12 @@ Player              = require './player'
 ProofOfPlay         = require './proof_of_play'
 VariedAdStream      = require './varied_ad_stream'
 {Ajax, XMLHttpAjax} = require 'ajax'
+http                = require 'http'
 
 broadsign = window.BroadSignObject
 
-defaultConfig = {}
-defaultConfig['vistar.api_key']    = '58b68728-11d4-41ed-964a-95dca7b59abd'
-defaultConfig['vistar.network_id'] = 'Ex-f6cCtRcydns8mcQqFWQ'
-defaultConfig['vistar.device_id']  = broadsign?.player_id or ''
-defaultConfig['vistar.venue_id']  = broadsign?.player_id or ''
-defaultConfig['vistar.debug']      = false
-defaultConfig['vistar.url']        =
-  'http://dev.api.vistarmedia.com/api/v1/get_ad/json'
 
-
-config = window.Cortex?.getConfig() or defaultConfig
+config = {}
 
 clientWidth = window.document.documentElement.clientWidth
 clientHeight = window.document.documentElement.clientHeight
@@ -25,7 +17,6 @@ clientHeight = window.document.documentElement.clientHeight
 # broadsign width and height
 dimensions = broadsign?.frame_resolution or "#{clientWidth}x#{clientHeight}"
 [width, height] = (Number(p) for p in dimensions.split('x'))
-
 
 window?.Vistar = ->
   # an example app
@@ -35,37 +26,48 @@ window?.Vistar = ->
       @bindConstant('navigator').to window.navigator
       @bindConstant('video').to document.querySelector('.player video')
       @bindConstant('image').to document.querySelector('.player img')
-      @bindConstant('config').to
-        url:               config['vistar.url']
-        apiKey:            config['vistar.api_key']
-        networkId:         config['vistar.network_id']
-        deviceId:          window.Cortex?.player?.id() or config['vistar.device_id']
-        venueId:           config['vistar.venue_id']
-        width:             width
-        height:            height
-        cacheAssets:       true
-        allowAudio:        true
-        directConnection:  false
-        #latitude:          39.9859241
-        #longitude:         -75.1299363
-        queueSize:         1
-        debug:             !!defaultConfig['vistar.debug']
-        mimeTypes:         ['image/gif', 'image/jpeg', 'image/png', 'video/webm']
-        displayArea: [
-          {
-            id:               'display-0'
-            width:            width
-            height:           height
-            allow_audio:      false
-            cpm_floor_cents:  Number(config['vistar.cpm_floor_cents'] or 0)
-          }
-        ]
+      @bindConstant('config').to config
+
+  if !!CONFIG
+    config = CONFIG
+    config.deviceId = broadsign?.player_id or config.deviceId
+    config.venueId  = broadsign?.player_id or config.venueId
+    config.width = width
+    config.height = height
+    config.displayArea = config.displayArea.map (area) ->
+      area.width = width
+      area.height = height
+      area
+  else
+    config = {
+      url:               'http://staging.api.vistarmedia.com/api/v1/get_ad/json'
+      apiKey:            'DEFAULT_API_KEY'
+      networkId:         'DEFAULT_NETWORK_ID'
+      deviceId:          broadsign?.player_id or ''
+      venueId:           broadsign?.player_id or ''
+      width:             width
+      height:            height
+      cacheAssets:       true
+      allowAudio:        true
+      directConnection:  false
+      queueSize:         1
+      debug:             false
+      mimeTypes:         ['image/gif', 'image/jpeg', 'image/png', 'video/webm']
+      displayArea: [
+        {
+          id:               'display-0'
+          width:            width
+          height:           height
+          allow_audio:      false
+          cpm_floor_cents:  Number(0)
+        }
+      ]
+    }
 
   injector = new inject.Injector(new Binder)
-
-  ads    = injector.getInstance VariedAdStream
-  player = injector.getInstance Player
-  pop    = injector.getInstance ProofOfPlay
+  ads      = injector.getInstance VariedAdStream
+  player   = injector.getInstance Player
+  pop      = injector.getInstance ProofOfPlay
 
   # this exists only so one can inspect the different components while it's
   # running

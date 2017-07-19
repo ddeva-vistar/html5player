@@ -21,3 +21,12 @@ Cortex UI.
 
 There is an example of using this in
 [https://github.com/vistarmedia/html5player/blob/master/src/app.coffee](src/app.coffee).
+
+## Configuration
+
+To use a JSON configuration, pass in the config in the command line.
+
+`make package config=/path/to/file/myjson.json`
+
+The same argument can be used with other tasks. See an example config in
+[https://github.com/vistarmedia/html5player/blob/master/config.json](config.json)

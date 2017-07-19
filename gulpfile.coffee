@@ -1,16 +1,19 @@
 require 'gulp-cjsx'
+argv        = require('yargs').argv
 browserify  = require 'gulp-browserify'
 coffee      = require 'gulp-coffee'
 coffeeify   = require 'coffeeify'
 concat      = require 'gulp-concat'
 connect     = require 'connect'
 connectjs   = require 'connect-livereload'
+fs          = require 'fs'
 gulp        = require 'gulp'
 gutil       = require 'gulp-util'
 less        = require 'gulp-less'
 livereload  = require 'gulp-livereload'
 mocha       = require 'gulp-mocha'
 serve       = require 'serve-static'
+template    = require 'gulp-template'
 
 
 project =
@@ -25,7 +28,7 @@ project =
 gulp.task 'default', ['build', 'watch']
 
 
-gulp.task 'build', ['src', 'static', 'style']
+gulp.task 'build', ['src', 'config', 'static', 'style']
 
 
 gulp.task 'watch:serve', ['watch', 'serve']
@@ -38,6 +41,19 @@ gulp.task 'src', ->
       extensions: ['.coffee']
     }))
     .pipe(concat('app.js'))
+    .pipe(gulp.dest(project.dest))
+
+gulp.task 'config', ->
+  config = ''
+  if argv.config
+    try
+      configFile = fs.readFileSync argv.config
+      config = JSON.parse configFile
+    catch err
+      gutil.log "Error parsing config file: " + err
+      process.exit(1)
+  gulp.src('./src/config.js')
+    .pipe(template({configJSON: JSON.stringify(config)}))
     .pipe(gulp.dest(project.dest))
 
 gulp.task 'dist', ->
